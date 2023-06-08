@@ -4,18 +4,22 @@ from pygame import *
 #переменные картинок
 img_player1 = 'tank1.png' #картинка 1 игрока 
 img_player2 = 'tank3.png' #картинка 2 игрока
-img_back = 'purple.png'
-img_bullet = 'bomb.png'
+img_back = 'bk.png'#Задний фон
+img_bullet_one = 'bullet_one.png'#Пуля для первого игрока
+img_bullet_two = 'bullet_two.png'#Пуля для второго игрока
 
 #Создание окон победы разных игроков
 font.init()
-font1 = font.Font(None, 80)
+font1 = font.SysFont('Arial', 80)
 win1 = font1.render('RIGHT TANK WIN!', True, (10, 10, 255))
 win2 = font1.render('LEFT TANK WIN!', True, (255, 10, 10))
 
 #длина/ширина окна
 win_width = 1400
 win_height = 700
+
+#Скорость пули
+bullet_speed = 10
 
 #создание окна
 window = display.set_mode((win_width, win_height))
@@ -30,8 +34,13 @@ win = False #флаг победы одного из игроков
 
 #Создание группы стен
 walls = sprite.Group()
-#Создание группы пуль
-bullets = sprite.Group()
+#Создание группы пуль для первого игрока 
+bullets_one = sprite.Group()
+#Создание группы пуль для второго игрока 
+bullets_two = sprite.Group()
+
+#Условия для перезарядки 
+
 
 #Основной класс 
 class GameSprite(sprite.Sprite):
@@ -49,6 +58,8 @@ class GameSprite(sprite.Sprite):
 
 #Класс игрока
 class Player(GameSprite):
+
+   #движение второго игорока
    def player_move_two(self):
       keys = key.get_pressed()
       if keys[K_UP] and self.rect.y > 10:
@@ -59,31 +70,32 @@ class Player(GameSprite):
          self.rect.x -= self.speed
       if keys[K_RIGHT] and self.rect.x < win_width - 60:
          self.rect.x += self.speed
-   
+
+   #функция стрельбы первого игрока
    def fire_one(self):
       keys = key.get_pressed()
       if keys[K_SPACE]:
          if img_player1 == 'tank4.png':
-            bullet = Bullet(img_bullet,self.rect.top+5,self.rect.centery, 10,10, 5)
-            bullets.add(bullet)
+            bullet = Bullet(img_bullet_one,self.rect.top-5,self.rect.centery-3, 10,10, bullet_speed)
+            bullets_one.add(bullet)
          if img_player1 == 'tank2.png':
-            bullet = Bullet(img_bullet,self.rect.buttom+5,self.rect.centery, 10,10, 5)
-            bullets.add(bullet)
+            bullet = Bullet(img_bullet_one,self.rect.buttom-5,self.rect.centery-3, 10,10, bullet_speed)
+            bullets_one.add(bullet)
          if img_player1 == 'tank3.png':
-            bullet = Bullet(img_bullet,self.rect.left+5,self.rect.centery, 10,10, 5)
-            bullets.add(bullet)
+            bullet = Bullet(img_bullet_one,self.rect.left-5,self.rect.centery-3, 10,10, bullet_speed)
+            bullets_one.add(bullet)
          if img_player1 == 'tank1.png':
-            bullet = Bullet(img_bullet,self.rect.right+5,self.rect.centery, 10,10, 5)
-            bullets.add(bullet)
+            bullet = Bullet(img_bullet_one,self.rect.right-5,self.rect.centery-3, 10,10, bullet_speed)
+            bullets_one.add(bullet)
             
-   
+   #функция стрельбы второго игрока
    def fire_two(self):
       keys = key.get_pressed()
       if keys[K_RSHIFT]:
-         bullet = Bullet(img_bullet,self.rect.left-5,self.rect.centery, 10,10, -5)
-         bullets.add(bullet)
+         bullet = Bullet(img_bullet_two,self.rect.left-5,self.rect.centery-6, 10,10, -bullet_speed)
+         bullets_two.add(bullet)
 
-
+   #движение первого игрока 
    def player_move_one(self):
       keys = key.get_pressed()
       if keys[K_w] and self.rect.y > 10 or sprite.spritecollide(player_one, walls, False):
@@ -122,26 +134,54 @@ class Wall(sprite.Sprite):
 #Класс пуль
 class Bullet(GameSprite):
    def update(self):
-       self.rect.x += self.speed
-       if self.rect.y < 0 or self.rect.x < 0 or sprite.groupcollide(bullets, walls, True, False):
-           self.kill()
+      self.rect.x += self.speed
+      if self.rect.y < 0 or self.rect.x < 0 or sprite.groupcollide(bullets_one, walls, True, False) or sprite.groupcollide(bullets_two, walls, True, False):
+         self.kill()
+      if sprite.groupcollide(bullets_two, bullets_one, True, True):
+         self.kill()
 
 #Экземпляры классов Player
-player_one = Player(img_player1,100,100,50,50,10)
-player_two = Player(img_player2,200,200,50,50,10)
+player_one = Player(img_player1,50,300,50,50,10)
+player_two = Player(img_player2,1300,300,50,50,10)
 #Экземпляры классов Wall
-wall1 = Wall(240,240,240,200,300,10,200)
+wall1 = Wall(0,0,0,200,0,15,300)
+wall2 = Wall(0,0,0,200,400,15,300)
+wall3 = Wall(0,0,0,1200,0,15,300)
+wall4 = Wall(0,0,0,1200,400,15,300)
+wall5 = Wall(0,0,0,300,400,200,15)
+wall6 = Wall(0,0,0,300,300,15,300)
+wall7 = Wall(0,0,0,700,500,15,200)
+wall8 = Wall(0,0,0,900,300,200,15)
+wall9 = Wall(0,0,0,300,600,200,15)
+wall10 = Wall(0,0,0,400,200,300,15)
+wall11 = Wall(0,0,0,600,0,15,100)
+wall12 = Wall(0,0,0,400,100,15,100)
+
+#обавление стены в группу стен
 walls.add(wall1)
+walls.add(wall2)
+walls.add(wall3)
+walls.add(wall4)
+walls.add(wall5)
+walls.add(wall6)
+walls.add(wall7)
+walls.add(wall8)
+walls.add(wall9)
+walls.add(wall10)
+walls.add(wall11)
+walls.add(wall12)
+
 
 
 #игровой цикл
 while not game_over:
     
-
+   #проверка на выход из гры
    for e in event.get():
       if e.type == QUIT:
          game_over = True  
-    
+   
+   
    if not win: 
       window.blit(background,(0,0))
 
@@ -158,25 +198,29 @@ while not game_over:
       #Стрельба второго игрока
       player_two.fire_two()
 
-
-
       #Отрисовка стен
       wall1.draw_wall()
       walls.draw(window)
 
       #Отрисовка пуль
-      bullets.update()
-      bullets.draw(window)
-            
+      bullets_one.update()
+      bullets_one.draw(window)
+
+      bullets_two.update()
+      bullets_two.draw(window)
+
+      #столкновение пуль
+      
+
+
       #Проигрыш игроков
-      if sprite.spritecollide(player_one, bullets, False):
+      if sprite.spritecollide(player_one, bullets_one, False) or sprite.spritecollide(player_one, bullets_two, False):
          win = True
          window.blit(win1, (470,250))
 
-      if sprite.spritecollide(player_two, bullets, False):
+      if sprite.spritecollide(player_two, bullets_one, False) or sprite.spritecollide(player_two, bullets_two, False):
          win = True
          window.blit(win2,(470,250))
-
       display.update()
    time.delay(50)
 
